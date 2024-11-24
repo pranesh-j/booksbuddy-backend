@@ -20,43 +20,16 @@ def get_all_books(request):
 
 @api_view(['POST'])
 def process_text(request):
-    logger.info(f"Request received: {request.data}")
     try:
         text = request.data.get('text', '')
-        if not text:
-            return Response(
-                {'error': 'No text provided'}, 
-                status=status.HTTP_400_BAD_REQUEST
-            )
-        
-        # Create new book
-        book = Book.objects.create(original_text=text)
-        
-        # Log before Claude API call
-        logger.info("Calling Claude API for text simplification")
-        
-        # Simplify text using Claude
-        simplified_text = simplify_text(text)
-        
-        # Log after Claude API call
-        logger.info("Claude API call successful")
-        
-        # Process and create pages
-        book.process_text(simplified_text)
-
-        # Get suggested title
-        suggested_title = suggest_title(text)
-        book.title = suggested_title
-        book.save()
-
+        book = Book.objects.create(title="New Book")
+        book.add_page(text)
         serializer = BookSerializer(book)
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
-        
+        return Response(serializer.data)
     except Exception as e:
-        logger.error(f"Error in process_text: {str(e)}")
         return Response(
-            {'error': str(e)}, 
-            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            {"error": f"Error in process_text: {str(e)}"},
+            status=status.HTTP_400_BAD_REQUEST
         )
 
 @api_view(['GET'])

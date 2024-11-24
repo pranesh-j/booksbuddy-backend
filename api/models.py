@@ -5,7 +5,13 @@ class Book(models.Model):
     title = models.CharField(max_length=200, default="Untitled")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    pages = models.JSONField(default=list)
+    pages = models.JSONField(default=list, blank=True)
+
+    def add_page(self, text):
+        if not isinstance(self.pages, list):
+            self.pages = []
+        self.pages.append(text)
+        self.save()
 
     def __str__(self):
         return self.title
