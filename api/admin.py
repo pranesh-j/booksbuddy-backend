@@ -3,8 +3,8 @@ from .models import Book, Page
 
 @admin.register(Book)
 class BookAdmin(admin.ModelAdmin):
-    list_display = ('id', 'title', 'created_at', 'is_processed', 'total_pages')
-    list_filter = ('is_processed', 'created_at')
+    list_display = ('id', 'created_at', 'title', 'last_edited')  # Adjust fields as needed
+    list_filter = ('created_at',)
 
 @admin.register(Page)
 class PageAdmin(admin.ModelAdmin):

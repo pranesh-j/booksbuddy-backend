@@ -108,8 +108,8 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # CORS settings
 CORS_ALLOWED_ORIGINS = [
-    'https://boooksbuddy-ui.vercel.app',
-    'http://localhost:3000'
+    "https://booksbuddy-ui.vercel.app",
+    "http://localhost:3000",
 ]
 
 CORS_ALLOW_CREDENTIALS = True
@@ -133,6 +133,9 @@ CORS_ALLOW_HEADERS = [
     'user-agent',
     'x-csrftoken',
     'x-requested-with',
+    'access-control-allow-origin',
+    'access-control-allow-methods',
+    'access-control-allow-headers'
 ]
 
 # REST Framework settings

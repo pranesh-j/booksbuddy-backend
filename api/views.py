@@ -4,7 +4,7 @@ from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
 import base64
-from .models import Book
+from .models import Book, Page
 from .serializers import BookSerializer
 from .services.claude_service import simplify_text, suggest_title, extract_text_from_image
 import logging
@@ -23,8 +23,32 @@ def get_all_books(request):
 def process_text(request):
     try:
         text = request.data.get('text', '')
-        book = Book.objects.create(title="New Book")
-        book.add_page(text)
+        if not text:
+            return Response(
+                {'error': 'No text provided'}, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        # Create new book with original text
+        book = Book.objects.create(
+            title="New Book",
+            original_text=text
+        )
+        
+        # Simplify the text using Claude
+        simplified_text = simplify_text(text)
+        
+        # Create the first page
+        Page.objects.create(
+            book=book,
+            page_number=1,
+            content=simplified_text
+        )
+        
+        book.total_pages = 1
+        book.is_processed = True
+        book.save()
+        
         serializer = BookSerializer(book)
         return Response(serializer.data)
     except Exception as e:
@@ -43,36 +67,43 @@ def get_book(request, book_id):
 @api_view(['PATCH'])
 def update_book(request, book_id):
     """Update book details"""
-    book = get_object_or_404(Book, id=book_id)
-    serializer = BookSerializer(book, data=request.data, partial=True)
-    if serializer.is_valid():
-        serializer.save()
-        return Response(serializer.data)
-    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    try:
+        book = get_object_or_404(Book, id=book_id)
+        serializer = BookSerializer(book, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    except Exception as e:
+        return Response(
+            {'error': str(e)},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
 
 @api_view(['POST'])
 def add_page(request, book_id):
     """Add a new page to an existing book"""
-    book = get_object_or_404(Book, id=book_id)
-    text = request.data.get('text', '')
-    
-    if not text:
-        return Response(
-            {'error': 'No text provided'}, 
-            status=status.HTTP_400_BAD_REQUEST
-        )
-        
     try:
-        # Simplify new text
+        book = get_object_or_404(Book, id=book_id)
+        text = request.data.get('text', '')
+        
+        if not text:
+            return Response(
+                {'error': 'No text provided'}, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
+            
+        # Simplify the text using Claude
         simplified_text = simplify_text(text)
         
-        # Add as new page
+        # Add the page
         book.add_page(simplified_text)
         
         serializer = BookSerializer(book)
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.data)
         
     except Exception as e:
+        logger.error(f"Error adding page: {str(e)}")
         return Response(
             {'error': str(e)}, 
             status=status.HTTP_500_INTERNAL_SERVER_ERROR
@@ -113,9 +144,45 @@ def health_check(request):
     return Response({"status": "healthy"})
 
 @api_view(['GET'])
-def api_root(request, format=None):
+def api_root(request):
     return Response({
-        'health': reverse('health_check', request=request, format=format),
-        'books': reverse('book-list', request=request, format=format),
-        'process': reverse('process-text', request=request, format=format),
+        'health': '/api/health/',
+        'books': '/api/books/',
+        'process': '/api/process/'
     })
+
+@api_view(['GET', 'POST'])
+def book_list(request):
+    if request.method == 'GET':
+        books = Book.objects.all()
+        serializer = BookSerializer(books, many=True)
+        return Response(serializer.data)
+    
+    elif request.method == 'POST':
+        serializer = BookSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['GET', 'PUT', 'DELETE'])
+def book_detail(request, pk):
+    try:
+        book = Book.objects.get(pk=pk)
+    except Book.DoesNotExist:
+        return Response(status=status.HTTP_404_NOT_FOUND)
+
+    if request.method == 'GET':
+        serializer = BookSerializer(book)
+        return Response(serializer.data)
+    
+    elif request.method == 'PUT':
+        serializer = BookSerializer(book, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+    elif request.method == 'DELETE':
+        book.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)

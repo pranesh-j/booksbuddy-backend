@@ -1,8 +1,15 @@
 from rest_framework import serializers
-from .models import Book
+from .models import Book, Page
+
+class PageSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Page
+        fields = ['id', 'page_number', 'content', 'created_at']
 
 class BookSerializer(serializers.ModelSerializer):
+    pages = PageSerializer(source='book_pages', many=True, read_only=True)
+    
     class Meta:
         model = Book
-        fields = ['id', 'title', 'created_at', 'updated_at', 'pages']
-        read_only_fields = ['created_at', 'updated_at']
+        fields = ['id', 'title', 'original_text', 'created_at', 'last_edited',
+                  'is_processed', 'total_pages', 'pages']
