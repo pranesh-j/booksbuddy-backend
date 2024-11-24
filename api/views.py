@@ -8,6 +8,7 @@ from .models import Book
 from .serializers import BookSerializer
 from .services.claude_service import simplify_text, suggest_title, extract_text_from_image
 import logging
+from rest_framework.reverse import reverse
 
 logger = logging.getLogger(__name__)
 
@@ -110,3 +111,11 @@ def upload_image(request):
 @api_view(['GET'])
 def health_check(request):
     return Response({"status": "healthy"})
+
+@api_view(['GET'])
+def api_root(request, format=None):
+    return Response({
+        'health': reverse('health_check', request=request, format=format),
+        'books': reverse('book-list', request=request, format=format),
+        'process': reverse('process-text', request=request, format=format),
+    })
