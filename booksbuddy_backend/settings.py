@@ -108,7 +108,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # CORS settings
 CORS_ALLOWED_ORIGINS = [
-    "https://booksbuddy-ui.vercel.app",
+    "https://boooksbuddy-ui.vercel.app",
     "http://localhost:3000",
 ]
 
