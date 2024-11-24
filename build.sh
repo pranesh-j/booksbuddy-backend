@@ -13,4 +13,9 @@ python manage.py collectstatic --no-input
 
 # Run database migrations
 echo "Running database migrations..."
-python manage.py migrate 
+python manage.py makemigrations api
+python manage.py migrate
+
+# Start gunicorn
+echo "Starting gunicorn..."
+gunicorn booksbuddy_backend.wsgi:application 
