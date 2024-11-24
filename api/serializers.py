@@ -7,9 +7,17 @@ class PageSerializer(serializers.ModelSerializer):
         fields = ['id', 'page_number', 'content', 'created_at']
 
 class BookSerializer(serializers.ModelSerializer):
-    pages = PageSerializer(source='book_pages', many=True, read_only=True)
+    pages = PageSerializer(many=True, read_only=True)
     
     class Meta:
         model = Book
         fields = ['id', 'title', 'original_text', 'created_at', 'last_edited',
                   'is_processed', 'total_pages', 'pages']
+        
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        representation['pages'] = sorted(
+            representation['pages'],
+            key=lambda x: x['page_number']
+        )
+        return representation

@@ -29,32 +29,37 @@ def process_text(request):
                 status=status.HTTP_400_BAD_REQUEST
             )
         
-        # Create new book with original text
+        # Create new book
         book = Book.objects.create(
-            title="New Book",
-            original_text=text
+            title="Untitled Book",
+            original_text=text,
+            is_processed=True
         )
         
-        # Simplify the text using Claude
-        simplified_text = simplify_text(text)
+        # Simplify text using Claude
+        try:
+            simplified_text = simplify_text(text)
+            suggested_title = suggest_title(text)
+        except Exception as e:
+            logger.error(f"Claude API error: {str(e)}")
+            return Response(
+                {'error': 'Error processing text with AI service'},
+                status=status.HTTP_503_SERVICE_UNAVAILABLE
+            )
         
-        # Create the first page
-        Page.objects.create(
-            book=book,
-            page_number=1,
-            content=simplified_text
-        )
-        
-        book.total_pages = 1
-        book.is_processed = True
+        # Add page and update title
+        book.add_page(simplified_text)
+        book.title = suggested_title
         book.save()
         
         serializer = BookSerializer(book)
         return Response(serializer.data)
+        
     except Exception as e:
+        logger.error(f"Error in process_text: {str(e)}")
         return Response(
-            {"error": f"Error in process_text: {str(e)}"},
-            status=status.HTTP_400_BAD_REQUEST
+            {"error": str(e)},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR
         )
 
 @api_view(['GET'])
@@ -93,19 +98,27 @@ def add_page(request, book_id):
                 status=status.HTTP_400_BAD_REQUEST
             )
             
-        # Simplify the text using Claude
-        simplified_text = simplify_text(text)
+        # Simplify new text
+        try:
+            simplified_text = simplify_text(text)
+        except Exception as e:
+            logger.error(f"Claude API error in add_page: {str(e)}")
+            return Response(
+                {'error': 'Error processing text with AI service'},
+                status=status.HTTP_503_SERVICE_UNAVAILABLE
+            )
         
-        # Add the page
+        # Add as new page
         book.add_page(simplified_text)
+        book.refresh_from_db()  # Refresh to get updated data
         
         serializer = BookSerializer(book)
         return Response(serializer.data)
         
     except Exception as e:
-        logger.error(f"Error adding page: {str(e)}")
+        logger.error(f"Error in add_page: {str(e)}")
         return Response(
-            {'error': str(e)}, 
+            {'error': str(e)},
             status=status.HTTP_500_INTERNAL_SERVER_ERROR
         )
 
