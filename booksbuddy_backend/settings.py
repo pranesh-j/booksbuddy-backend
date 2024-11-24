@@ -1,7 +1,7 @@
 from pathlib import Path
 import os
 from dotenv import load_dotenv
-
+import dj_database_url
 # Load environment variables
 load_dotenv()
 
@@ -66,11 +66,13 @@ TEMPLATES = [
 WSGI_APPLICATION = 'booksbuddy_backend.wsgi.application'
 
 # Database
+
+
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
+    'default': dj_database_url.config(
+        default='sqlite:///db.sqlite3',
+        conn_max_age=600
+    )
 }
 
 # Password validation
@@ -109,10 +111,11 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # CORS settings
 CORS_ALLOWED_ORIGINS = [
     "https://boooksbuddy-ui.vercel.app",
-    "http://localhost:3000",
+    "http://localhost:3000"
 ]
 
-CORS_ALLOW_CREDENTIALS = True
+CORS_ALLOW_ALL_ORIGINS = True  # Temporarily enable this for testing
+CORS_ALLOW_CREDENTIALS = False  # Change this to False since we're not using credentials
 
 CORS_ALLOW_METHODS = [
     'DELETE',
