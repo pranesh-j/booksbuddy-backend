@@ -133,3 +133,7 @@ def upload_image(request):
             {'error': str(e)}, 
             status=status.HTTP_500_INTERNAL_SERVER_ERROR
         )
+
+@api_view(['GET'])
+def health_check(request):
+    return Response({"status": "healthy"})
