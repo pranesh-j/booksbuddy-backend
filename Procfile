@@ -1,1 +1,1 @@
-web: gunicorn booksbuddy_backend.wsgi 
+web: python -m gunicorn booksbuddy_backend.wsgi 
