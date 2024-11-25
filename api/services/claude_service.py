@@ -49,7 +49,9 @@ def simplify_text(text):
     try:
         client = anthropic.Client(api_key=settings.ANTHROPIC_API_KEY)
         
-        prompt = """Simplify this text to make it easier to understand. Replace hard or complicated words with simple really easy to understand words. Use clear, simple language while keeping the important information without removing anything or adding extra things. Just modify the sentences in easy to understand format and do not remove any sentence. Make it more readable but maintain the key points. Return just the simplified text without any prefixes or formatting and if the text is too short orthe input doesnt make sense, say so that its not a correct word, do not make up a sentence do only what is necessary. Also do not add any prefixes or suffixes, just return the output directly:
+        prompt = """Simplify this text to make it easier to understand. Replace hard or complicated words with simple reallyeasy to understand words. Use clear, simple language while keeping the important information without removing anything or adding extra things. Just modify the sentences in easy to understand format and do not remove any sentence. Make it more readable but maintain the key points. Return just the simplified text without any prefixes or formatting and if the text is too short orthe input doesnt make sense, say so that its not a correct word, do not make up a sentence do only what is necessary. 
+        And if the input it is in another language, translate it to english without modifying the context and the meaning, the output should be gramatically correct, and then simplify. Also do not add any prefixes or suffixes, just return the output directly
+         :
 
         {text}"""
         
