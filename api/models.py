@@ -5,6 +5,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 class Book(models.Model):
+    user_id = models.CharField(max_length=100)
     title = models.CharField(max_length=200, blank=True, null=True, default="Untitled Book")
     original_text = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
@@ -14,6 +15,9 @@ class Book(models.Model):
 
     class Meta:
         ordering = ['-last_edited']
+        indexes = [
+            models.Index(fields=['user_id', '-last_edited']),
+        ]
 
     def add_page(self, text):
         """Add a new page to the book"""
@@ -35,7 +39,7 @@ class Book(models.Model):
             raise
 
     def __str__(self):
-        return self.title
+        return f"{self.title} (User: {self.user_id})"
 
 class Page(models.Model):
     book = models.ForeignKey(Book, related_name='pages', on_delete=models.CASCADE)
@@ -48,4 +52,4 @@ class Page(models.Model):
         unique_together = ['book', 'page_number']
 
     def __str__(self):
-        return f"Page in {self.book.title}"
+        return f"Page {self.page_number} in {self.book.title}"
