@@ -6,7 +6,7 @@ from django.shortcuts import get_object_or_404
 import base64
 from .models import Book, Page
 from .serializers import BookSerializer
-from .services.claude_service import simplify_text, suggest_title, extract_text_from_image
+from .services.ai_service import simplify_text, suggest_title, extract_text_from_image
 import logging
 
 logger = logging.getLogger(__name__)

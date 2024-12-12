@@ -154,5 +154,7 @@ REST_FRAMEWORK = {
     ],
 }
 
-# Anthropic API Key
+
 ANTHROPIC_API_KEY = os.getenv('ANTHROPIC_API_KEY')
+
+GEMINI_API_KEY = os.getenv('GEMINI_API_KEY')
