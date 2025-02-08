@@ -16,7 +16,7 @@ class AIServiceProvider:
         self.provider = 'gemini' if settings.GEMINI_API_KEY else 'claude'
         if self.provider == 'gemini':
             genai.configure(api_key=settings.GEMINI_API_KEY)
-            self.model = genai.GenerativeModel('gemini-pro')
+            self.model = genai.GenerativeModel('gemini-1.5-flash')
             self.vision_model = genai.GenerativeModel('gemini-pro-vision')
         else:
             self.client = anthropic.Client(api_key=settings.ANTHROPIC_API_KEY)
@@ -45,7 +45,7 @@ class AIServiceProvider:
             Exception: If there's an error in API processing
         """
         try:
-            if self.provider == 'gemini-1.5-flash':
+            if self.provider == 'gemini':
                 image_bytes = base64.b64decode(image_data)
                 response = self.vision_model.generate_content(
                     ["Extract the text from this image without any formatting or prefixes.",
