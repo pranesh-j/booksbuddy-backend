@@ -45,7 +45,7 @@ class AIServiceProvider:
             Exception: If there's an error in API processing
         """
         try:
-            if self.provider == 'gemini':
+            if self.provider == 'gemini-1.5-flash':
                 image_bytes = base64.b64decode(image_data)
                 response = self.vision_model.generate_content(
                     ["Extract the text from this image without any formatting or prefixes.",
