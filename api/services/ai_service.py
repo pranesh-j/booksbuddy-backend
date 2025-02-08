@@ -17,7 +17,7 @@ class AIServiceProvider:
         if self.provider == 'gemini':
             genai.configure(api_key=settings.GEMINI_API_KEY)
             self.model = genai.GenerativeModel('gemini-1.5-flash')
-            self.vision_model = genai.GenerativeModel('gemini-pro-vision')
+            self.vision_model = genai.GenerativeModel('gemini-1.5-flash')
         else:
             self.client = anthropic.Client(api_key=settings.ANTHROPIC_API_KEY)
 
